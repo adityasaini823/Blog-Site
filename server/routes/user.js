@@ -52,7 +52,6 @@ router.get('/categories/:id', async (req, res) => {
   }
 });
 
-// Route for searching stories (by category, title, content)
 router.get('/search', async (req, res) => {
   try {
     const { category, title, content } = req.query;
