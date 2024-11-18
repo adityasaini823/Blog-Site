@@ -6,7 +6,7 @@ const Category = require('../models/Category');
 // Category Routes
 router.get('/categories', async (req, res) => {
   try {
-    const categories = await Category.find(); // Fetch all categories
+    const categories = await Category.find().populate('parentCategory', 'title'); // Only populate the title
     res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching categories', error: error.message });
@@ -93,12 +93,12 @@ router.get('/story/:id', async (req, res) => {
 
 router.post('/story/create', async (req, res) => {
   try {
-    const { title, parentCategories, content } = req.body;
-    if (!title || !parentCategories || !content) {
+    const { title, parentCategory, content } = req.body;
+    if (!title || !parentCategory || !content) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const newStory = new Story({ title, parentCategories, content });
+    const newStory = new Story({ title, parentCategory, content });
     await newStory.save();
     res.status(201).json({ message: 'Story created successfully', story: newStory });
   } catch (error) {

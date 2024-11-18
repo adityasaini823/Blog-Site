@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Homepage from './pages/user/homepage';
@@ -22,6 +21,7 @@ function App() {
             <Route path="add-story" element={<AddStory />} />
             <Route path="add-category" element={<AddCategory />} />
             <Route path="edit-category/:id" element={<AddCategory />} />
+            <Route path="edit-story/:id" element={<AddStory />} />
           </Route>
 
           {/* User Routes */}

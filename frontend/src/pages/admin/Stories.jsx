@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -12,29 +12,51 @@ import {
   IconButton,
   Paper,
   Chip,
+  Alert
 } from '@mui/material';
+import axios from 'axios';
 import { Edit, Delete, ReadMore } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom'; // For navigation to Add Story page
-
-const dummyStories = [
-  { id: 1, title: 'React Basics', categories: ['Technology', 'Programming'], content: 'This is a story about React Basics.' },
-  { id: 2, title: 'Advanced Programming', categories: ['Programming'], content: 'This story covers advanced programming topics.' },
-  { id: 3, title: 'Healthy Living', categories: ['Lifestyle'], content: 'Tips for healthy living and well-being.' },
-  { id: 4, title: 'Workout Tips', categories: ['Fitness'], content: 'Workout tips for a better physique.' },
-  { id: 5, title: 'Online Learning', categories: ['Education', 'Technology'], content: 'How to make the most of online learning.' },
-];
+import { useNavigate } from 'react-router-dom';
 
 const Stories = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [message, setMessage] = useState('');
+  const [stories, setStories] = useState([]);
   const navigate = useNavigate();
 
-  const filteredStories = dummyStories.filter((story) =>
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/admins/stories'); // Adjust the endpoint as needed
+        setStories(response.data);
+      } catch (error) {
+        console.error('Error fetching stories:', error);
+      }
+    };
+
+    fetchStories();
+  }, []);
+
+  const handleDeleteStory = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/admins/stories/${id}`);
+      setStories((prevStories) => prevStories.filter((story) => story.id !== id));
+      setMessage('Story deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting story:', error);
+      setMessage('Failed to delete story.');
+    }
+  };
+
+  const filteredStories = stories.filter((story) =>
     story.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <Box sx={{ p: 3 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        {message && <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert>}
+
         <Typography variant="h4">All Stories</Typography>
         <Button variant="contained" color="primary" onClick={() => navigate('/admins/add-story')}>
           Add Story
@@ -53,22 +75,29 @@ const Stories = () => {
           </TableHead>
           <TableBody>
             {filteredStories.map((story) => (
-              <TableRow key={story.id}>
-                <TableCell>{story.id}</TableCell>
+              <TableRow key={story._id}>
+                <TableCell>{story._id}</TableCell>
                 <TableCell>{story.title}</TableCell>
                 <TableCell>
-                  {story.categories.map((category) => (
-                    <Chip key={category} label={category} sx={{ margin: 0.5 }} />
-                  ))}
+
+                  {Array.isArray(story.parentCategories) && story.parentCategories.length > 0 ? (
+                    story.parentCategories.map((category) => (
+                      <Chip key={category._id} label={category.title} sx={{ margin: 0.5 }} />
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="textSecondary">
+                      No Categories
+                    </Typography>
+                  )}
                 </TableCell>
                 <TableCell align="right">
-                  <IconButton color="primary">
+                  <IconButton color="primary" onClick={() => navigate(`/admins/edit-story/${story._id}`)}>
                     <Edit />
                   </IconButton>
-                  <IconButton color="error">
+                  <IconButton color="error" onClick={() => handleDeleteStory(story._id)}>
                     <Delete />
                   </IconButton>
-                  <IconButton color="info">
+                  <IconButton color="info" onClick={() => navigate(`/admins/view-story/${story._id}`)}>
                     <ReadMore />
                   </IconButton>
                 </TableCell>
