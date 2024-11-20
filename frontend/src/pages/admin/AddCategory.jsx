@@ -50,7 +50,8 @@ const AddCategory = () => {
         setParentCategory('');
         navigate('/admins/categories', {
             state: { message: `Category ${id ? 'updated' : 'added'} successfully!` },
-          });      } else {
+          });
+              } else {
         console.error('Error:', data.message);
       }
     } catch (error) {
@@ -72,6 +73,7 @@ const AddCategory = () => {
       />
       <FormControl fullWidth margin="normal">
         <InputLabel>Parent Category</InputLabel>
+        
         <Select
           value={parentCategory}
           onChange={(e) => setParentCategory(e.target.value)}

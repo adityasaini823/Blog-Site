@@ -93,12 +93,14 @@ router.get('/story/:id', async (req, res) => {
 
 router.post('/story/create', async (req, res) => {
   try {
-    const { title, parentCategory, content } = req.body;
-    if (!title || !parentCategory || !content) {
+    const { title, content } = req.body;
+    const parentCategories=req.body.parentCategory
+
+    if (!title || !content) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const newStory = new Story({ title, parentCategory, content });
+    const newStory = new Story({ title, parentCategories, content });
     await newStory.save();
     res.status(201).json({ message: 'Story created successfully', story: newStory });
   } catch (error) {
@@ -109,7 +111,9 @@ router.post('/story/create', async (req, res) => {
 router.put('/story/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, parentCategories, content } = req.body;
+    const { title, content } = req.body;
+    const parentCategories=req.body.parentCategory
+    console.log(parentCategories);
     const updatedStory = await Story.findByIdAndUpdate(
       id,
       { title, parentCategories, content },

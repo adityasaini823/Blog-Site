@@ -11,18 +11,22 @@ import {
   CssBaseline,
   AppBar,
   IconButton,
+  Button,
   useTheme,
 } from '@mui/material';
+import { Outlet } from 'react-router-dom';
+import Grid from '@mui/material/Grid2';
+import TypeSpecimenIcon from '@mui/icons-material/TypeSpecimen';
 import { MenuBook, LibraryBooks, Menu } from '@mui/icons-material';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const drawerWidth = 240;
 
 const AdminDashboard = () => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const theme = useTheme(); // Access the theme for custom styles
-  const navigate = useNavigate(); // React Router's navigate function
-  const location = useLocation(); // Current location to sync active state
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -31,7 +35,8 @@ const AdminDashboard = () => {
   const drawerItems = [
     { label: 'Stories', path: '/admins/stories', icon: <MenuBook /> },
     { label: 'Categories', path: '/admins/categories', icon: <LibraryBooks /> },
-    { label: 'AddStory', path: '/admins/add-story', icon: <MenuBook /> },
+    { label: 'Add Story', path: '/admins/add-story', icon: <MenuBook /> },
+    { label: 'Add Category', path: '/admins/add-category', icon: <TypeSpecimenIcon /> },
   ];
 
   const drawer = (
@@ -44,7 +49,7 @@ const AdminDashboard = () => {
             button
             onClick={() => {
               navigate(item.path);
-              setMobileOpen(false); // Close drawer on mobile after navigation
+              setMobileOpen(false);
             }}
             sx={{
               backgroundColor: location.pathname === item.path ? theme.palette.primary.main : 'transparent',
@@ -86,8 +91,32 @@ const AdminDashboard = () => {
             <Menu />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Admin Dashboard
+            Admin Dashboard 
           </Typography>
+          
+          <Grid container spacing={2}>
+          {drawerItems.map((item) => (
+            <Grid item xs={12} sm={6} md={3} key={item.label}>
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                startIcon={item.icon}
+                onClick={() => navigate(item.path)}
+                sx={{
+                  textTransform: 'none',
+                  backgroundColor:
+                    location.pathname === item.path ? theme.palette.secondary.main :'#121212',
+                  '&:hover': {
+                    backgroundColor:'#121212',
+                  },
+                }}
+              >
+                {item.label}
+              </Button>
+            </Grid>
+          ))}
+        </Grid>
         </Toolbar>
       </AppBar>
       <Box
@@ -100,7 +129,7 @@ const AdminDashboard = () => {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
@@ -124,10 +153,13 @@ const AdminDashboard = () => {
         component="main"
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
+        
         <Toolbar />
-        <Outlet /> {/* Placeholder for nested routes */}
+        <Outlet />
       </Box>
+      
     </Box>
+    
   );
 };
 
