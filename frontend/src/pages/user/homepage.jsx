@@ -1,18 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, CardContent, Typography, Button, Paper,Toolbar } from '@mui/material';
+import { Box, CardContent, Typography, Button, Paper, Toolbar } from '@mui/material';
 import { styled } from '@mui/system';
 import AppNavbar from './AppNavbar'; // Import the new component
 import Grid from '@mui/material/Grid2'; // Correct import for Grid v2
 import HomeCategory from './HomeCategory';
 import Footer from './footer';
-const dummyStories = [
-  { id: 1, title: 'React Basics', categories: ['Technology', 'Programming'], content: 'This is a story about React Basics.' },
-  { id: 2, title: 'Advanced Programming', categories: ['Programming'], content: 'This story covers advanced programming topics.' },
-  { id: 3, title: 'Healthy Living', categories: ['Lifestyle'], content: 'Tips for healthy living and well-being.' },
-  { id: 4, title: 'Workout Tips', categories: ['Fitness'], content: 'Workout tips for a better physique.' },
-  { id: 5, title: 'Online Learning', categories: ['Education', 'Technology'], content: 'How to make the most of online learning.' },
-];
+import axios from 'axios';
+import { useState } from 'react';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '#121212',
@@ -24,9 +19,29 @@ const Item = styled(Paper)(({ theme }) => ({
 
 const Homepage = () => {
   const navigate = useNavigate();
-  
-  const handleReadMore = (story) => {
-    navigate(`/story/${story.id}`);
+  const [stories,setStories]=useState([]);
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/stories');
+        const stories = response.data;
+        // console.log(stories);
+        setStories(stories);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    fetchStories();
+  }, []);
+  const extractPlainText = (content) => {
+    // Replace this logic depending on the format of story.content
+    const tempElement = document.createElement('div');
+    tempElement.innerHTML = content; // If it's HTML
+    return tempElement.textContent || tempElement.innerText || '';
+  };
+  const handleReadMore = (_id) => {
+    // console.log(typeo(_id));
+    navigate(`/story/${_id}`);
   };
   return (
     <>
@@ -34,25 +49,25 @@ const Homepage = () => {
       <Toolbar />
       <Box sx={{ width: '100vw', padding: 2 }}>
         <Grid container spacing={2}>
-          <Grid size={{ xs:12 ,sm:8}}>
+          <Grid size={{ xs: 12, sm: 8 }}>
             <Typography variant="h4" gutterBottom>
               All Stories
             </Typography>
-            {dummyStories.map((story) => (
+            {stories.map((story) => (
               <Item key={story.id} sx={{ mb: 2 }}>
                 <CardContent>
                   <Typography variant="h6" component="div" gutterBottom>
                     {story.title}
                   </Typography>
                   <Typography variant="body2" color="text.grey">
-                    {story.content.length > 100
-                      ? `${story.content.substring(0, 100)}...`
-                      : story.content}
+                  {extractPlainText(story.content).length > 100
+                    ? `${extractPlainText(story.content).substring(0, 250)}...`
+                    : extractPlainText(story.content)}
                   </Typography>
                   <Button
                     size="small"
                     sx={{ color: '#FFC107' }}
-                    onClick={() => handleReadMore(story)}
+                    onClick={() => handleReadMore(story._id)}
                   >
                     Read More
                   </Button>
@@ -60,12 +75,12 @@ const Homepage = () => {
               </Item>
             ))}
           </Grid>
-          <Grid size={{ xs:12 ,sm:4}}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <HomeCategory />
           </Grid>
         </Grid>
       </Box>
-      <Footer/>
+      <Footer />
     </>
   );
 };
