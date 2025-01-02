@@ -6,7 +6,8 @@ const router = express.Router();
 // Route to get all categories
 router.get('/categories', async (req, res) => {
   try {
-    const categories = await Category.find();
+    const categories = await Category.find()
+    .sort({title:1});
     res.status(200).json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -41,11 +42,21 @@ router.get('/stories/:id', async (req, res) => {
 
 // Route to get stories by category ID (ordered by most recent)
 router.get('/categories/:id', async (req, res) => {
+  const id=req.params.id;
   try {
-    const stories = await Story.find({ parentCategories: req.params.id })
+    const category=await Category.findById(id);
+    if(category.title==='All'){
+      const stories = await Story.find()
       .sort({ createdAt: -1 })  // Sort by createdAt descending (most recent first)
       .populate('parentCategories', 'title');
     res.status(200).json(stories);
+    }else{
+      const stories = await Story.find({ parentCategories: req.params.id })
+      .sort({ createdAt: -1 })  // Sort by createdAt descending (most recent first)
+      .populate('parentCategories', 'title');
+    res.status(200).json(stories);
+    }
+    
   } catch (error) {
     console.error('Error fetching stories by category:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -67,11 +78,6 @@ router.get('/search', async (req, res) => {
       query.title = { $regex: title, $options: 'i' }; // Case-insensitive search for title
     }
 
-    // Search by content if provided
-    if (content) {
-      query.content = { $regex: content, $options: 'i' }; // Case-insensitive search for content
-    }
-
     const stories = await Story.find(query)
       .sort({ createdAt: -1 })  // Sort by createdAt descending (most recent first)
       .populate('parentCategories', 'title');  // Populate category title
@@ -86,5 +92,6 @@ router.get('/search', async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
 
 module.exports = router;

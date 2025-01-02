@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, Box, Button, Select, MenuItem, InputBase, FormControl } from '@mui/material';
 import { styled } from '@mui/system';
-
-const categories = ['All', 'Technology', 'Programming', 'Lifestyle', 'Fitness', 'Education'];
-
+import axios from 'axios';
+import { useRecoilValue } from 'recoil';
+import { categoriesState } from '../recoil/categoriesState'; // Adjust the import path for your atom
+import { useNavigate } from 'react-router-dom';
 const SearchBar = styled(InputBase)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper || '#121212',
   padding: '4px 8px',
@@ -13,17 +14,35 @@ const SearchBar = styled(InputBase)(({ theme }) => ({
 }));
 
 const AppNavbar = () => {
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const navigate=useNavigate();
+  const [searchQuery, setSearchQuery] = useState({ category: '', title: '', content: '' });
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const categories = useRecoilValue(categoriesState);
+  async function handleSelect(id,categoryTitle){
+    try {
+      const response = await axios.get(`http://localhost:3000/categories/${id}`);
+      navigate('/', { state: { stories: response.data,title:categoryTitle } });
+    } catch (error) {
+      console.error('Error fetching category stories:', error);
+    }
 
-  const handleSearch = () => {
-    console.log(`Searching for: ${searchQuery} in category: ${selectedCategory}`);
+  }
+  const handleSearch = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/search', {
+        params: {
+          ...searchQuery,
+          category: selectedCategory === 'All' ? '' : selectedCategory,
+        },
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error while searching:', error);
+    }
   };
 
   return (
-    <>
-   
-    <AppBar  sx={{ backgroundColor: '#0A0A0A'}}>
+    <AppBar sx={{ backgroundColor: '#0A0A0A' }}>
       <Toolbar
         sx={{
           display: 'flex',
@@ -62,10 +81,10 @@ const AppNavbar = () => {
           </Typography>
           <Select
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            // onChange={(e) => handleSelect(e)}
+            selec
             displayEmpty
             sx={{
-              width:'95%',
               flex: 1,
               color: 'grey',
               '& .MuiSelect-icon': {
@@ -74,8 +93,8 @@ const AppNavbar = () => {
             }}
           >
             {categories.map((category) => (
-              <MenuItem key={category} value={category}>
-                {category}
+              <MenuItem key={category._id} value={category._id}>
+                {category.title}
               </MenuItem>
             ))}
           </Select>
@@ -92,8 +111,8 @@ const AppNavbar = () => {
         >
           <SearchBar
             placeholder="Search stories..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchQuery.title}
+            onChange={(e) => setSearchQuery({ ...searchQuery, title: e.target.value })}
           />
           <Button
             variant="contained"
@@ -111,7 +130,6 @@ const AppNavbar = () => {
         </Box>
       </Toolbar>
     </AppBar>
-    </>
   );
 };
 

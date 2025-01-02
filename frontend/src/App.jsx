@@ -1,3 +1,6 @@
+import { useEffect } from 'react';
+import { useSetRecoilState } from 'recoil';
+import { categoriesState } from './pages/recoil/categoriesState';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Homepage from './pages/user/homepage';
@@ -7,9 +10,24 @@ import Stories from './pages/admin/Stories';
 import ReadStory from './pages/user/ReadStory';
 import AddStory from './pages/admin/AddStory';
 import AddCategory from './pages/admin/addCategory';
-const theme = createTheme(); // Define the theme here
+import axios from 'axios';
 
+const theme = createTheme(); // Define the theme here
 function App() {
+  const setCategories = useSetRecoilState(categoriesState);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/categories');
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, [setCategories]);
+
   return (
     <ThemeProvider theme={theme}>
       <Router>

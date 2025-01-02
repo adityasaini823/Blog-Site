@@ -1,44 +1,41 @@
-import React, { useEffect,useState } from 'react';
-import { Typography, Paper, List, ListItem, ListItemText } from '@mui/material';
-import { styled } from '@mui/system';
+import React from 'react';
+import { useRecoilValue } from 'recoil';
+import { categoriesState } from '../recoil/categoriesState';
+import { Typography, List, ListItem, ListItemText } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: '#121212',
-  color: '#B0B0B0',
-  padding: theme.spacing(2),
-  textAlign: 'center',
-}));
-
 const HomeCategory = () => {
-  const [categories,setCategories]=useState([]);
-  useEffect(()=>{
-    const fetchCategories=async ()=>{
-      try{
-      const response=await axios.get('http://localhost:3000/categories');
-      const categories=response.data;
-      // console.log(categories);
-      setCategories(categories);
-      }catch(err){
-        console.log(err);
-      }
+  const navigate = useNavigate();
+  const categories = useRecoilValue(categoriesState);
+
+  const handleCategoryClick = async (id,categoryTitle) => {
+    try {
+      const response = await axios.get(`http://localhost:3000/categories/${id}`);
+      navigate('/', { state: { stories: response.data,category:categoryTitle } });
+    } catch (error) {
+      console.error('Error fetching category stories:', error);
     }
-    fetchCategories();
-  },[]);
+  };
+
   return (
     <div>
-    <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom>
         Categories
-    </Typography>
-    <Item>
+      </Typography>
       <List>
         {categories.map((category) => (
-          <ListItem key={category._id} button>
+          <ListItem
+            key={category._id}
+            sx={{ cursor: 'pointer' }}
+            button
+            onClick={() => handleCategoryClick(category._id,category.title)}
+          >
             <ListItemText primary={category.title} />
           </ListItem>
         ))}
       </List>
-    </Item>
-    </div>)
-}
+    </div>
+  );
+};
 
 export default HomeCategory;
